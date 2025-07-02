@@ -2,6 +2,8 @@ import csv
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import time
+from tabulate import tabulate
 
 
 # sigmoid function
@@ -59,7 +61,9 @@ eta = 0.1
 iterac = []
 vecerror = []
 
-for iter in range(20000):
+start = time.time()
+
+for iter in range(500000):
     l1 = nonlin(np.dot(X_train, syn0))
     l2 = nonlin(np.dot(l1, syn1))
     l2_error = y_train.reshape(-1, 1) - l2
@@ -76,6 +80,9 @@ for iter in range(20000):
         print('Mean Absolute Error (MAE) :' + str(errorabs))
         iterac.append(iter)
         vecerror.append(errorabs)
+
+end = time.time()
+print(f"Tiempo de ejecución: {end - start:.4f} segundos")
 
 
 print ('Output After Training:')
