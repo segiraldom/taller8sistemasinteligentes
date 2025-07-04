@@ -2,8 +2,6 @@ import csv
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
-import time
-from tabulate import tabulate
 
 # ------------------------------
 # Función sigmoide y su derivada
@@ -71,7 +69,14 @@ eta = 0.55
 iterac = []
 vecerror = []
 
-for iter in range(20000):
+max_iters = 10000000
+patience = 100
+tolerance = 1e-7
+early_stop_counter = 0
+last_error = None
+
+for iter in range(max_iters):
+    # Propagación hacia adelante
     l1 = nonlin(np.dot(X_train, syn0))
     l2 = nonlin(np.dot(l1, syn1))
 
@@ -92,20 +97,40 @@ for iter in range(20000):
     if iter % 10 == 0:
         iterac.append(iter)
         vecerror.append(errorabs)
+        print(f"Iteración {iter} - MAE: {errorabs:.6f}")
 
+        # Early stopping
+        if last_error is not None and abs(last_error - errorabs) < tolerance:
+            early_stop_counter += 1
+            if early_stop_counter > patience:
+                print("⚠️ Early stopping: error estabilizado.")
+                break
+        else:
+            early_stop_counter = 0
+        last_error = errorabs
 
-print ('Output After Training:')
-#print('Salida red:','\n',l2)
-print ('Error:' + str(np.mean(np.abs(l2_error))))
-print('Pesos Nuevos','\n')
-print (syn1)
-print (syn0)
+# ------------------------------
+# 7. Predicciones finales (entrenamiento y prueba)
+# ------------------------------
+# Predicción sobre entrenamiento
+l2_train = nonlin(np.dot(nonlin(np.dot(X_train, syn0)), syn1))
+# Umbralizar salida
+l2_train_bin = (l2_train > 0.5).astype(int)
 
-# Calcular predicciones finales para los datos de entrenamiento
-l1_train = nonlin(np.dot(X_train, syn0))
-l2_train = nonlin(np.dot(l1_train, syn1))  # salida final de la red
+# Accuracy
+acc_train = np.mean(l2_train_bin.flatten() == y_train)
 
-# Graficar comparación
+print(f"\n✅ Accuracy entrenamiento: {round(acc_train * 100, 2)}%")
+
+# Predicción sobre prueba
+l2_test = nonlin(np.dot(nonlin(np.dot(X_test, syn0)), syn1))
+l2_bin_test = (l2_test > 0.5).astype(int)
+acc_test = np.mean(l2_bin_test.flatten() == y_test)
+print(f"✅ Accuracy prueba: {round(acc_test * 100, 2)}%")
+
+# ------------------------------
+# 8. Gráfica comparación salida real vs predicha (entrenamiento)
+# ------------------------------
 plt.figure(figsize=(10, 5))
 plt.plot(y_train, label="Y real (y_train)", marker='o')
 plt.plot(l2_train.flatten(), label="Salida red neuronal", marker='x')
