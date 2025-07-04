@@ -2,6 +2,7 @@ import csv #import de la lectura csv
 import numpy as np # Import de calculos numéricos
 from sklearn.preprocessing import MinMaxScaler # Import de la normalización de datos
 import matplotlib.pyplot as plt # Import de la visualización de datos
+import time # Import para medir el tiempo de ejecución
 
 # ------------------------------
 # Función sigmoide y su derivada
@@ -62,6 +63,9 @@ np.random.seed(42) # Fijar semilla para reproducibilidad
 syn0 = np.random.rand(X_train.shape[1], 9)  # capa oculta de 9 neuronas
 syn1 = np.random.rand(9, 1) # capa de salida de 1 neurona
 
+# Medir el tiempo de inicio del entrenamiento
+inicio = time.time()
+
 # ------------------------------
 # 6. Entrenamiento con backpropagation
 # ------------------------------
@@ -109,6 +113,9 @@ for iter in range(max_iters): # Ciclo de entrenamiento
             early_stop_counter = 0 # Reiniciar contador si el error cambia
         last_error = errorabs # Actualizar el último error
 
+fin = time.time() # Tiempo final de entrenamiento
+print(f"\nTiempo de entrenamiento: {fin - inicio:.2f} segundos") # Mostrar tiempo de entrenamiento
+
 # ------------------------------
 # 7. Predicciones finales (entrenamiento y prueba)
 # ------------------------------
@@ -127,6 +134,17 @@ l2_test = nonlin(np.dot(nonlin(np.dot(X_test, syn0)), syn1)) # Predicción sobre
 l2_bin_test = (l2_test > 0.5).astype(int) # Umbralizar salida
 acc_test = np.mean(l2_bin_test.flatten() == y_test)
 print(f"Exactitud de la prueba: {round(acc_test * 100, 2)}%")
+
+# Predicción para nuevos datos de 2 instancias nuevas
+datos1 = [22, 0, 1, 0, 0,] 
+datos2 = [26, 3, 2, 2, 1,]
+datos1Norm = scaler.transform([datos1]) # Normalizar datos de entrada
+datos2Norm = scaler.transform([datos2]) # Normalizar datos de entrada
+# Predicción para nuevos datos
+prediccion1 = nonlin(np.dot(nonlin(np.dot(datos1Norm, syn0)), syn1))
+prediccion2 = nonlin(np.dot(nonlin(np.dot(datos2Norm, syn0)), syn1))
+print(f"\nPredicción para datos1: {prediccion1[0][0]:.4f}")
+print(f"Predicción para datos2: {prediccion2[0][0]:.4f}")
 
 # ------------------------------
 # 8. Gráfica comparación salida real vs predicha (entrenamiento)
